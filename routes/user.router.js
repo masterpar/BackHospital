@@ -4,16 +4,21 @@ const app = express();
 const bcrypt = require('bcryptjs')
 
 // models
-const User = require('../models/user');
+const User = require('../models/user.model');
 const mdAuthentication = require('../middlewares/authentication');
 
 
 //=============================================
 // get all users
 //============================================
-app.get('/',(req, res, next) => {
+app.get('/',(req, res) => {
+
+    let from = req.query.from || 0;
+    from = Number(from);
 
     User.find({ }, 'name email img role')
+        .skip(from) // # + users
+        .limit(5) //paginate
         .exec(
     (err, users) => {
         if (err){
@@ -24,10 +29,14 @@ app.get('/',(req, res, next) => {
             })
         }
 
-        return res.status(200).json({
-            ok: true,
-            users
+        User.countDocuments({},(err, count) => {
+            return res.status(200).json({
+                ok: true,
+                users,
+                total: count
+            })
         })
+
     })
 });
 

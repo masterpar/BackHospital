@@ -5,7 +5,7 @@ const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const SEED = require('../config/config').SEED;
 // models
-const User = require('../models/user');
+const User = require('../models/user.model');
 
 app.post('/', (req, res) => {
 

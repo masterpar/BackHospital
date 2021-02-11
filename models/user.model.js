@@ -15,6 +15,7 @@ const userSchema = new Schema({
     password: { type: String, required: [ true, 'the password is required'] },
     img: { type: String, required:  false },
     role: { type: String, required:  true, default: 'USER_ROLE', enum: rolesValid },
+    google:{ type: Boolean, required:  true, default: false }
 })
 
 

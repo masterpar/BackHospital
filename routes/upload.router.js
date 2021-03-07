@@ -66,7 +66,7 @@ app.put('/:type/:id',(req, res) => {
     const fileName = `${id}-${ new Date().getMilliseconds()}.${extension}`
 
     // file move
-    const path = `./uploads/${ type }/${ fileName}`;
+    const path = `./uploads/${type}/${ fileName}`;
 
     file.mv( path, err => {
         if (err){
@@ -79,7 +79,7 @@ app.put('/:type/:id',(req, res) => {
     })
 
 // success
-    upByType( type, id, fileName, res );
+   upByType( type, id, fileName, res );
 
 });
 
@@ -87,43 +87,52 @@ app.put('/:type/:id',(req, res) => {
 // up by type
 //============================================
 
-upByType = ( type, id, fileName, res ) =>{
-
+ upByType =  async ( type, id, fileName, res ) =>{
     // type users
     if (type === 'users'){
-        User.findById(id, (err, user)=> {
 
-            if (!user){
-                return res.status(400).json({
-                    ok: true,
-                    msg : "user does not exist",
-                    errors: { message : 'user does not exist'}
-                })
-            }
+       const user = await User.findById(id)
 
-            const pathOld= './uploads/users/' +  user.img;
+        if (!user){
+            return res.status(400).json({
+                ok: true,
+                msg : "user does not exist",
+                errors: { message : 'user does not exist'}
+            })
+        }
+
+        const pathOld= './uploads/users/' +  user.img;
 
             //if exists, delete the previous image
-            if (fs.existsSync(pathOld)){
-                fs.unlink(pathOld)
-            }
+               if (fs.existsSync(pathOld, (err, stat) => {
+                fs.unlinkSync(pathOld, (err) => {
+                    console.log('unlink: ' + err)
+                })
+            }, err => console.log('stat: '+ err)
+            ))
 
+            console.log(fileName)
             user.img = fileName;
-            user.password = '';
-            user.save( (err, updatedUser) => {
-
+            // user.password = ':)';
+           await user.save( (err, updatedUser) => {
+                if (err){
+                    return res.status(400).json({
+                        ok: false,
+                        msg : "error update user",
+                        err
+                    })
+                }
                     return res.status(200).json({
                         ok: true,
                         msg : "updated user image",
-                        updatedUser
+                        user: updatedUser
                     })
             })
-        })
     }
 
     // type doctors
     if (type === 'doctors'){
-        Doctor.findById(id, (err, doctor)=> {
+        const doctor = await Doctor.findById(id)
 
             if (!doctor){
                 return res.status(400).json({
@@ -136,13 +145,16 @@ upByType = ( type, id, fileName, res ) =>{
             const pathOld= './uploads/doctors/' +  doctor.img;
 
             //if exists, delete the previous image
-            if (fs.existsSync(pathOld)){
-                fs.unlink(pathOld)
-            }
-
+            if (fs.existsSync(pathOld, (err, stat) => {
+                    fs.unlinkSync(pathOld, (err) => {
+                        console.log('unlink: ' + err)
+                    })
+                }, err => console.log('stat: '+ err)
+            ))
+            console.log(fileName)
             doctor.img = fileName;
             doctor.password = '';
-            doctor.save( (err, updatedDoctor) => {
+            await doctor.save( (err, updatedDoctor) => {
 
                 return res.status(200).json({
                     ok: true,
@@ -150,12 +162,11 @@ upByType = ( type, id, fileName, res ) =>{
                     updatedDoctor
                 })
             })
-        })
     }
 
     // type hospitls
     if (type === 'hospitals'){
-        Hospital.findById(id, (err, hospital)=> {
+        const hospital = await Hospital.findById(id)
 
             if (!hospital){
                 return res.status(400).json({
@@ -166,16 +177,20 @@ upByType = ( type, id, fileName, res ) =>{
             }
 
 
+
             const pathOld= './uploads/hospitals/' +  hospital.img;
 
             //if exists, delete the previous image
-            if (fs.existsSync(pathOld)){
-                fs.unlink(pathOld)
-            }
-
+            if (fs.existsSync(pathOld, (err, stat) => {
+                    fs.unlinkSync(pathOld, (err) => {
+                        console.log('unlink: ' + err)
+                    })
+                }, err => console.log('stat: '+ err)
+            ))
+                console.log(fileName)
             hospital.img = fileName;
             hospital.password = '';
-            hospital.save( (err, updatedHospital) => {
+            await hospital.save( (err, updatedHospital) => {
 
                 return res.status(200).json({
                     ok: true,
@@ -183,7 +198,6 @@ upByType = ( type, id, fileName, res ) =>{
                     updatedHospital
                 })
             })
-        })
     }
 }
 

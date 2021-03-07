@@ -16,7 +16,7 @@ app.get('/',(req, res) => {
     let from = req.query.from || 0;
     from = Number(from);
 
-    User.find({ }, 'name email img role')
+    User.find({ }, 'name email img role google')
         .skip(from) // # + users
         .limit(5) //paginate
         .exec(
@@ -44,7 +44,7 @@ app.get('/',(req, res) => {
 // ==============================================
 // Create new User
 // ==============================================
-app.post('/', mdAuthentication.verifyToken ,(req, res) => {
+app.post('/',(req, res) => {
 
     const body = req.body;
     const user = new User({
@@ -75,7 +75,7 @@ app.post('/', mdAuthentication.verifyToken ,(req, res) => {
 //=============================================
 // Update User
 //============================================
-app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
+app.put('/:id', [mdAuthentication.verifyToken, mdAuthentication.verifySameUser_Admin] , (req, res) => {
 
     const id = req.params.id;
     const body = req.body;
@@ -123,7 +123,7 @@ app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
 //=============================================
 // Delete User by id
 //============================================
-app.delete('/:id', mdAuthentication.verifyToken, (req, res) => {
+app.delete('/:id', [mdAuthentication.verifyToken, mdAuthentication.verifyAdminRole] , (req, res) => {
     const id = req.params.id;
     User.findByIdAndRemove(id, (err, userDeleted) => {
 

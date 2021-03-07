@@ -4,12 +4,14 @@ const app = express();
 const bcrypt = require('bcryptjs')
 const jwt = require('jsonwebtoken')
 const SEED = require('../config/config').SEED;
+const mdAuthentication = require('../middlewares/authentication');
+
 // models
 const User = require('../models/user.model');
 
 // google
 const {OAuth2Client} = require('google-auth-library');
-const GOOGLE_CLIENT_ID = require('../config/config')
+const { GOOGLE_CLIENT_ID, GOOGLE_SECRET } = require('../config/config')
 
 
 //=============================================
@@ -52,12 +54,12 @@ app.post('/', (req, res) => {
             SEED,
             { expiresIn: 14400}
             )
-
         return res.status(200).json({
             ok: true,
             user: userDB,
             token: token,
-            id: userDB._id
+            id: userDB._id,
+            menu: getMenu(userDB.role)
         })
     })
 
@@ -69,19 +71,20 @@ app.post('/', (req, res) => {
 app.post('/google', (req, res) => {
 
     const token = req.body.token || '';
-
-    const client = new OAuth2Client(GOOGLE_CLIENT_ID);
+    const client = new OAuth2Client(GOOGLE_CLIENT_ID,GOOGLE_SECRET );
 
     async function verify() {
+
         const ticket = await client.verifyIdToken({
             idToken: token,
             audience: GOOGLE_CLIENT_ID
         });
+
         const payload = ticket.getPayload();
         const userid = payload['sub'];
 
         //mongo
-        User.findOne({ emal: payload.email}, (err, user) =>{
+        User.findOne({ email: payload.email}, (err, user) =>{
             if (err){
                 return res.status(500).json({
                     ok: false,
@@ -111,7 +114,8 @@ app.post('/google', (req, res) => {
                         ok: true,
                         user: user,
                         token: token,
-                        id: user._id
+                        id: user._id,
+                        menu: getMenu(user.role)
                     })
                 }
                 // user no exists for email
@@ -145,7 +149,8 @@ app.post('/google', (req, res) => {
                         ok: true,
                         user: userDB,
                         token: token,
-                        id: userDB._id
+                        id: userDB._id,
+                        menu: getMenu(userDB.role)
                     })
                 })
             }
@@ -156,11 +161,59 @@ app.post('/google', (req, res) => {
         return res.status(400).json({
             ok: false,
             errors: err,
-
         })
     });
 
 })
 
+//=============================================
+// renew token
+//============================================
 
+app.get('/renewtoken', mdAuthentication.verifyToken, (req, res) => {
+
+    //--------- Token ----------
+
+    const token = jwt.sign({ user: req.user }, SEED, { expiresIn: 14400})
+
+    return res.status(200).json({
+        ok: true,
+        token: token
+    })
+})
+
+//=============================================
+// get menu
+//============================================
+getMenu = (Role) => {
+    const menu = [
+      {
+        title: 'Main',
+        icon: 'dripicons-article',
+        submenu: [
+          { title: 'Dashboard', url: '/dashboard'},
+          { title: 'Progress', url: '/progress'},
+          { title: 'Graficas', url: '/graficas'},
+          { title: 'Promises', url: '/promises'},
+          { title: 'Rxjs', url: '/rxjs'},
+        ]
+      },
+      {
+        title: 'Maintenance',
+        icon: 'dripicons-help',
+        submenu: [
+          // { title: 'Users', url: '/users'},
+          { title: 'Hospitals', url: '/hospitals'},
+          { title: 'Doctors', url: '/doctors'},
+        ]
+      }
+    ];
+
+    if (Role === 'ADMIN_ROLE'){
+        menu[1].submenu.unshift({ title: 'Users', url: '/users'})
+    }
+
+    return menu;
+
+}
 module.exports = app;

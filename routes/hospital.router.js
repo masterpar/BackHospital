@@ -39,6 +39,36 @@ app.get('/',(req, res) => {
             })
 });
 
+//=============================================
+// get Hospital
+//============================================
+
+app.get('/:id', (req,res)=> {
+    const id = req.params.id;
+    Hospital.findById(id)
+        .populate('user', 'name img email')
+        .exec((err,hospital)=> {
+            if (err){
+                return res.status(500).json({
+                    ok: false,
+                    msg: 'error searching hospital',
+                    errors: err
+                })
+            }
+            if(!hospital){
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'Hospital not exist',
+                    errors: { message: 'No exist Hospital'}
+                })
+            }
+
+            res.status(200).json({
+                ok: true,
+                hospital
+            })
+        })
+})
 
 // ==============================================
 // Create new Hospital

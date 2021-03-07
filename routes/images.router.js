@@ -1,9 +1,10 @@
+// const  mdAuthentication = require("../middlewares/authentication")
 const express = require('express');
 const fs = require('fs');
 const app = express();
 
 
-app.get('/:type/:img',(req, res, next) => {
+app.get('/:type/:img' ,(req, res, next) => {
 
     const type = req.params.type;
     const img = req.params.img;

@@ -15,13 +15,13 @@ app.get('/',(req, res) => {
     let from = req.query.from || 0;
     from = Number(from);
 
-    Doctor.find({ }, 'name user hospital ')
+    Doctor.find({ }, 'name user img hospital ')
         .skip(from) // # + users
         .limit(5) //paginate
-        .populate('user', 'name email')
+        .populate('user', 'name email ')
         .populate('hospital')
         .exec(
-            (err, Doctors) => {
+            (err, doctors) => {
                 if (err) {
                     return res.status(500).json({
                         ok: false,
@@ -33,13 +33,46 @@ app.get('/',(req, res) => {
                 Doctor.countDocuments({}, (err, count) => {
                     return res.status(200).json({
                         ok: true,
-                        Doctors,
+                        doctors,
                         total: count
                     })
                 })
             })
 
 });
+
+//=============================================
+// get one doctor
+//============================================
+
+app.get('/:id', (req, res)=> {
+
+    const id = req.params.id;
+
+    Doctor.findById(id)
+        .populate('user', 'name email img')
+        .populate('hospital')
+        .exec((err,doctor) => {
+            if (err){
+                return res.status(500).json({
+                    ok: false,
+                    msg: 'error searching for Doctor',
+                    errors: err
+                })
+            }
+            if(!doctor){
+                return res.status(400).json({
+                    ok: false,
+                    msg: 'the Doctor with the id '+id + ' does not exist',
+                    errors: { message: 'the Doctor with the id '+id + ' does not exist' }
+                })
+            }
+            res.status(201).json({
+                ok: true,
+                doctor
+            })
+        })
+})
 
 
 // ==============================================
@@ -80,7 +113,7 @@ app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
     const id = req.params.id;
     const body = req.body;
 
-    Doctor.findById( id, (err, Doctor ) => {
+    Doctor.findById( id, (err, doctor ) => {
         if (err){
             return res.status(500).json({
                 ok: false,
@@ -88,7 +121,7 @@ app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
                 errors: err
             })
         }
-        if(!Doctor){
+        if(!doctor){
             return res.status(400).json({
                 ok: false,
                 msg: 'the Doctor with the id '+id + ' does not exist',
@@ -96,11 +129,11 @@ app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
             })
         }
 
-        Doctor.name = body.name;
-        Doctor.user = body.user._id;
-        Doctor.hospital = body.hospital;
+        doctor.name = body.name;
+        doctor.user = body.user._id;
+        doctor.hospital = body.hospital;
 
-        Doctor.save( (err, savedDoctor) => {
+        doctor.save( (err, savedDoctor) => {
             if (err){
                 return res.status(400).json({
                     ok: false,
@@ -108,10 +141,9 @@ app.put('/:id', mdAuthentication.verifyToken , (req, res) => {
                     errors: err
                 })
             }
-
             res.status(201).json({
                 ok: true,
-                Doctor: savedDoctor
+                doctor: savedDoctor
             })
         })
 

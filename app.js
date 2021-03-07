@@ -1,9 +1,15 @@
 const express = require('express')
 const mongoose = require('mongoose')
+const cors = require('cors')
 const app = express();
 
 //connection MongoDB
 const URL = 'mongodb+srv://camilo:a6607847@hospitalangular.j5ckr.mongodb.net'
+
+
+//cors
+app.use(cors())
+
 
 //Routes
 const appRoutes = require('./routes/app.route')
@@ -14,6 +20,8 @@ const doctorRoutes = require('./routes/doctor.router')
 const searchRoutes = require('./routes/search.router')
 const uploadRoutes = require('./routes/upload.router')
 const imagesRoutes = require('./routes/images.router')
+
+
 
 mongoose.connect(URL,
     {

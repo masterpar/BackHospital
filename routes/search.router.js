@@ -78,7 +78,7 @@ const searchHospitals = (search, regex) => {
 
     return new Promise( (resolve, reject) =>{
         Hospital.find({ name: regex })
-            . populate( 'user', 'name email')
+            . populate( 'user', 'name email img')
             .exec((err, hospitals) =>{
             if (err ){
                 reject('error loading hospitals')
@@ -95,7 +95,7 @@ const searchDoctors = (search, regex) => {
 
     return new Promise( (resolve, reject) =>{
         Doctor.find({ name: regex })
-            .populate('user', 'name email')
+            .populate('user', 'name email img')
             .populate('hospital')
             .exec((err, doctors) => {
             if (err ){
@@ -112,7 +112,7 @@ const searchDoctors = (search, regex) => {
 const searchUsers = (search, regex) => {
 
     return new Promise( (resolve, reject) =>{
-        User.find({}, 'name email role')
+        User.find({}, 'name email img role')
             .or( [
                 { 'name': regex },
                 { 'email': regex },

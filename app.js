@@ -1,6 +1,7 @@
 const express = require('express')
 const mongoose = require('mongoose')
 const cors = require('cors')
+require('dotenv').config({ path: '.env'})
 const app = express();
 
 //connection MongoDB
@@ -51,7 +52,7 @@ app.use('/img', imagesRoutes);
 
 app.use('/', appRoutes);
 
-app.listen(3000, () => {
+app.listen(process.env.PORT || 3000, () => {
     console.log('express port: 3000', 'online')
 })
 
